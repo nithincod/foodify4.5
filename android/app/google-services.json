@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "456662430588",
+    "project_id": "foodify2o",
+    "storage_bucket": "foodify2o.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:456662430588:android:8dea76f9fed927bcbd2af9",
+        "android_client_info": {
+          "package_name": "com.example.foodify2o"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "456662430588-lp2dct1b085qnmnag1pkhcfh8f7ttd2m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKSDDabr9as80DdNOvC2sol5PaprqNrRs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "456662430588-lp2dct1b085qnmnag1pkhcfh8f7ttd2m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

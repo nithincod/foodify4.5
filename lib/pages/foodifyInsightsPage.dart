@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../utils/background.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -16,24 +18,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class Background extends StatelessWidget {
-  const Background({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue[50]!, Colors.blueAccent, Colors.purple[300]!],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
-    );
-  }
-}
 
 class InsightsPage extends StatelessWidget {
   const InsightsPage({Key? key}) : super(key: key);

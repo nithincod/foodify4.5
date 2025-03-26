@@ -153,19 +153,6 @@ class IntroCard extends StatelessWidget {
       width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(50.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.indigo[800]!.withOpacity(.15),
-            offset: const Offset(0, 10),
-            blurRadius: 0,
-            spreadRadius: 0,
-          )
-        ],
-        gradient: const RadialGradient(
-          colors: [Color(0xff0E5C9E), Color(0xff031965)],
-          focal: Alignment.topCenter,
-          radius: .85,
-        ),
       ),
       padding: const EdgeInsets.all(25.0),
       child: Column(
@@ -250,19 +237,6 @@ class TrackingNutrientsCard extends StatelessWidget {
           height: 230,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(50.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.indigo[800]!.withOpacity(.15),
-                offset: const Offset(0, 10),
-                blurRadius: 0,
-                spreadRadius: 0,
-              )
-            ],
-            gradient: const RadialGradient(
-              colors: [Color(0xff0E5C9E), Color(0xff031965)],
-              focal: Alignment.topCenter,
-              radius: .85,
-            ),
           ),
           padding: const EdgeInsets.all(15.0),
           child: Column(
@@ -420,19 +394,6 @@ class TrackingCard extends StatelessWidget {
         height: 300,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(50.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.indigo[800]!.withOpacity(.15),
-              offset: const Offset(0, 10),
-              blurRadius: 0,
-              spreadRadius: 0,
-            )
-          ],
-          gradient: const RadialGradient(
-            colors: [Color(0xff0E5C9E), Color(0xff031965)],
-            focal: Alignment.topCenter,
-            radius: .85,
-          ),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(

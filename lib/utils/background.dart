@@ -8,12 +8,7 @@ class Background extends StatelessWidget {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-            colors: [Colors.blue[50]!, Colors.blueAccent, Colors.purple[300]!],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter),
-      ),
+      color: Colors.blueAccent, // Solid background color
     );
   }
 }

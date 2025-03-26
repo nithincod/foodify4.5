@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../utils/background.dart';
 import '../utils/shimmer.dart';
 import 'foodify2oHealthyReceipiesPage.dart';
 import 'foodify2oSnapPage.dart';
@@ -243,19 +244,7 @@ class _TrackingFoodPageState extends State<TrackingFoodPage> {
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(25.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.indigo[800]!.withOpacity(.15),
-                  offset: const Offset(0, 10),
-                  blurRadius: 0,
-                  spreadRadius: 0,
-                )
-              ],
-              gradient: const RadialGradient(
-                colors: [Color(0xff0E5C9E), Color(0xff031965)],
-                focal: Alignment.topCenter,
-                radius: .85,
-              ),
+              color: Colors.orangeAccent,
             ),
             child: Text(subtitle, style: const TextStyle(fontSize: 16, color: Colors.white)),
           ),
@@ -280,19 +269,7 @@ class _TrackingFoodPageState extends State<TrackingFoodPage> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(25.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.indigo[500]!.withOpacity(.15),
-                offset: const Offset(0, 10),
-                blurRadius: 0,
-                spreadRadius: 0,
-              )
-            ],
-            gradient: const RadialGradient(
-              colors: [Color(0xff0E5C9E), Color(0xff031965)],
-              focal: Alignment.topCenter,
-              radius: .85,
-            ),
+            color: Colors.white10
           ),
           alignment: Alignment.center,
           child: const Text('Insights', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -310,19 +287,7 @@ class _TrackingFoodPageState extends State<TrackingFoodPage> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(25.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.indigo[500]!.withOpacity(.15),
-              offset: const Offset(0, 10),
-              blurRadius: 0,
-              spreadRadius: 0,
-            )
-          ],
-          gradient: const RadialGradient(
-            colors: [Color(0xff0E5C9E), Color(0xff031965)],
-            focal: Alignment.topCenter,
-            radius: .85,
-          ),
+          color: Colors.white10
         ),
         alignment: Alignment.center,
         child: const Text('SnapGalleries', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -345,19 +310,7 @@ class _TrackingFoodPageState extends State<TrackingFoodPage> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(25.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.indigo[500]!.withOpacity(.15),
-                offset: const Offset(0, 10),
-                blurRadius: 0,
-                spreadRadius: 0,
-              )
-            ],
-            gradient: const RadialGradient(
-              colors: [Color(0xff0E5C9E), Color(0xff031965)],
-              focal: Alignment.topCenter,
-              radius: .85,
-            ),
+            color: Colors.white10
           ),
           alignment: Alignment.center,
           child: const Text('Recipes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -375,19 +328,7 @@ class _TrackingFoodPageState extends State<TrackingFoodPage> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(25.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.indigo[500]!.withOpacity(.15),
-              offset: const Offset(0, 10),
-              blurRadius: 0,
-              spreadRadius: 0,
-            )
-          ],
-          gradient: const RadialGradient(
-            colors: [Color(0xff0E5C9E), Color(0xff031965)],
-            focal: Alignment.topCenter,
-            radius: .85,
-          ),
+          color: Colors.white10
         ),
         alignment: Alignment.center,
         child: const Text('SavedMeals', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),

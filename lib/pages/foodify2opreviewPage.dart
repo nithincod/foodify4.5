@@ -44,19 +44,14 @@ class _PreviewPageState extends State<PreviewPage> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Full-Screen Camera Preview
           _isCameraInitialized
               ? Positioned.fill(child: CameraPreview(_cameraController!))
               : Center(child: CircularProgressIndicator()),
 
           // Camera Framing Guide (Rounded Corners)
-          Positioned.fill(
-            child: CustomPaint(
-              painter: RoundedFramePainter(),
-            ),
-          ),
+         
 
-          // Top Buttons & SnapFood Text
+          // SnapFood Text
           Positioned(
             top: 40,
             left: 5,
@@ -65,16 +60,7 @@ class _PreviewPageState extends State<PreviewPage> {
               onPressed: () => Navigator.pop(context),
             ),
           ),
-          Positioned(
-            top: 40,
-            right: 60,
-            child: Icon(Icons.flash_on, color: Colors.white, size: 30),
-          ),
-          Positioned(
-            top: 40,
-            right: 20,
-            child: Icon(Icons.auto_awesome, color: Colors.white, size: 30),
-          ),
+         
           Positioned(
             top: 85,
             left: MediaQuery.of(context).size.width / 2 - 60,
@@ -95,28 +81,7 @@ class _PreviewPageState extends State<PreviewPage> {
           ),
 
           // Capture Button (Bottom Center)
-          Positioned(
-            bottom: 40,
-            left: MediaQuery.of(context).size.width / 2 - 35,
-            child: GestureDetector(
-              onTap: _captureImage,
-              child: Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-          ),
-
-          // Gallery Button (Bottom Left)
-          Positioned(
-            bottom: 40,
-            left: 30,
-            child: Icon(Icons.image, color: Colors.white, size: 40),
-          ),
+          //gallery button
         ],
       ),
     );
@@ -136,43 +101,4 @@ class _PreviewPageState extends State<PreviewPage> {
   }
 }
 
-// Custom Painter for Rounded Framing Guide
-class RoundedFramePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
 
-    final double cornerRadius = 20;
-    final double cornerLength = 50;
-
-    // Draw rounded corners
-    Path path = Path()
-      ..moveTo(20 + cornerRadius, 100)
-      ..lineTo(20 + cornerLength, 100)
-      ..moveTo(20, 100 + cornerRadius)
-      ..lineTo(20, 100 + cornerLength)
-
-      ..moveTo(size.width - 20 - cornerRadius, 100)
-      ..lineTo(size.width - 20 - cornerLength, 100)
-      ..moveTo(size.width - 20, 100 + cornerRadius)
-      ..lineTo(size.width - 20, 100 + cornerLength)
-
-      ..moveTo(20 + cornerRadius, size.height - 100)
-      ..lineTo(20 + cornerLength, size.height - 100)
-      ..moveTo(20, size.height - 100 - cornerRadius)
-      ..lineTo(20, size.height - 100 - cornerLength)
-
-      ..moveTo(size.width - 20 - cornerRadius, size.height - 100)
-      ..lineTo(size.width - 20 - cornerLength, size.height - 100)
-      ..moveTo(size.width - 20, size.height - 100 - cornerRadius)
-      ..lineTo(size.width - 20, size.height - 100 - cornerLength);
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
-}

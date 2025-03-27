@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../utils/background.dart';
-import '../utils/shimmer.dart';
 import 'foodify2oHealthyReceipiesPage.dart';
 import 'foodify2oSnapPage.dart';
 import 'foodifyInsightsPage.dart';

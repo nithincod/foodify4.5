@@ -234,64 +234,6 @@ class _FoodSearchScreenState extends State<FoodSearchScreen> {
                 ),
               ),
             ),
-            Expanded(
-              child: foodItems.isEmpty
-                  ? const Center(child: Text('No results found'))
-                  : ListView.builder(
-                      itemCount: foodItems.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          margin: const EdgeInsets.symmetric(
-                              vertical: 8.0, horizontal: 16.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          elevation: 3,
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                                vertical: 10.0, horizontal: 20.0),
-                            title: Text(
-                              foodItems[index].name,
-                              style: const TextStyle(
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '${foodItems[index].quantity} - ${foodItems[index].calories} Cal | Protein: ${foodItems[index].protein}g | Fat: ${foodItems[index].fat}g | Carbs: ${foodItems[index].carbs}g',
-                              style: const TextStyle(
-                                  color: Colors.grey, fontSize: 14.0),
-                            ),
-                            trailing: PopupMenuButton<String>(
-                              onSelected: (value) {
-                                saveFoodToFirebase(value, foodItems[index]);
-                                getTotalCalories(DateTime.now()
-                                    .toIso8601String()
-                                    .split('T')[0]);
-                                getTotalMacronutrients(DateTime.now()
-                                    .toIso8601String()
-                                    .split('T')[0]);
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                    value: "breakfast",
-                                    child: Text("Breakfast")),
-                                const PopupMenuItem(
-                                    value: "lunch", child: Text("Lunch")),
-                                const PopupMenuItem(
-                                    value: "snacks", child: Text("Snacks")),
-                                const PopupMenuItem(
-                                    value: "dinner", child: Text("Dinner")),
-                              ],
-                              child: const Icon(Icons.add,
-                                  color: Colors.orangeAccent),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
           ],
         ),
       ),

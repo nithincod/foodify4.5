@@ -43,7 +43,7 @@ class _SnapTrackPageState extends State<SnapTrackPage> {
         _cameraController = CameraController(
           _cameras![0],
           ResolutionPreset.medium,
-          enableAudio: false, // Disable audio for better performance
+          enableAudio: false,
         );
         await _cameraController!.initialize();
         if (!mounted) return;

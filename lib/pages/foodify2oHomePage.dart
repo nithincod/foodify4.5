@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore integration
-
-
-import '../services/AuthServices.dart'; // Assuming you have an AuthService
-import '../utils/background.dart'; // Custom background widget
-import '../utils/searchinput.dart'; // Custom search input widget
-import 'foodify2oSnapPage.dart'; // Snap and track page
-import 'foodifyTrackingPage.dart'; // Tracking page
+import '../services/AuthServices.dart';
+import '../utils/background.dart';
+import '../utils/searchinput.dart';
+import 'foodify2oSnapPage.dart'; 
+import 'foodifyTrackingPage.dart'; 
 
 class FoodCard {
   final String title;
@@ -16,46 +13,6 @@ class FoodCard {
   FoodCard({required this.title, required this.image});
 }
 
-class _Foodify2oData {
-  
-
-
-  Future<Map<String, double>> getTotalMacronutrients(String date) async {
-    Map<String, double> totalMacronutrients = {
-      'protein': 0,
-      'carbs': 0,
-      'fat': 0,
-    };
-
-    List<String> mealTypes = ['breakfast', 'lunch', 'snacks', 'dinner'];
-
-    for (String mealType in mealTypes) {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('meals')
-          .doc(date)
-          .collection(mealType)
-          .get();
-
-      for (var doc in snapshot.docs) {
-        totalMacronutrients['protein'] =
-            (totalMacronutrients['protein'] ?? 0) + (double.tryParse(doc['protein']?.toString() ?? '0') ?? 0);
-        totalMacronutrients['carbs'] =
-            (totalMacronutrients['carbs'] ?? 0) + (double.tryParse(doc['carbs']?.toString() ?? '0') ?? 0);
-        totalMacronutrients['fat'] =
-            (totalMacronutrients['fat'] ?? 0) + (double.tryParse(doc['fat']?.toString() ?? '0') ?? 0);
-      }
-    }
-
-    debugPrint("Total Macronutrients for $date: $totalMacronutrients"); 
-    return totalMacronutrients;
-  }
-}
-
-
-String getCurrentDate() {
-  DateTime now = DateTime.now();
-  return "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-}
 
 class Foodify2oHomePage extends StatefulWidget {
   Foodify2oHomePage({super.key});
@@ -68,45 +25,6 @@ class _Foodify2oHomePageState extends State<Foodify2oHomePage>{
   final List<FoodCard> foodCards = [
     FoodCard(title: "Apple", image: "assets/images/apple.png"),
   ];
-
-  final _Foodify2oData _foodify2oData = _Foodify2oData();
-  Map<String, double> macronutrients = {
-    'protein': 0,
-    'carbs': 0,
-    'fat': 0,
-  };
-
-@override
-void initState() {
-  super.initState();
-  _fetchMealCalories();  // Fetch data when the page loads
-}
-
-@override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Reload data when the page becomes visible again
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchMealCalories();
-    });
-  }
-
-
-
-  Future<void> _fetchMealCalories() async {
-    String currentDate = getCurrentDate();
-    debugPrint("Fetching meal data for $currentDate");
-
-    try {
-      final data = await _foodify2oData.getTotalMacronutrients(currentDate);
-      setState(() {
-        macronutrients = data;
-      });
-    } catch (e) {
-      debugPrint("Error fetching meal data: $e");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,7 +41,13 @@ void initState() {
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
                     height: 320,
-                    child: TrackingNutrientsCard(macronutrients: macronutrients),
+                    child: TrackingNutrientsCard(
+                      macronutrients: {
+                        'protein': 50,
+                        'carbs': 100,
+                        'fat': 20,
+                      },
+                    ),
                   ),
                   const TrackingCard(),
                 ],
@@ -325,7 +249,7 @@ class TrackingNutrientsCard extends StatelessWidget {
   }
 }
 
-// **Nutrient Stat Widget**
+
 class _NutrientStat extends StatelessWidget {
   final String label;
   final String value;
@@ -466,7 +390,7 @@ class TrackingCard extends StatelessWidget {
   }
 }
 
-// **Reusable Icon Card**
+
 class _IconCard extends StatelessWidget {
   final IconData icon;
   final Color color;

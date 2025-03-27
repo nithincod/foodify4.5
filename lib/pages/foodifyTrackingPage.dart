@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../utils/background.dart';
-import '../utils/shimmer.dart';
 import 'foodify2oHealthyReceipiesPage.dart';
 import 'foodify2oSnapPage.dart';
 import 'foodifyInsightsPage.dart';
@@ -43,7 +42,6 @@ class _Foodify2oData {
 }
 
 class _TrackingFoodPageState extends State<TrackingFoodPage> {
-  final _foodify2oData = _Foodify2oData();
   Map<String, int> mealCalories = {
     'breakfast': 0,
     'lunch': 0,
@@ -51,210 +49,135 @@ class _TrackingFoodPageState extends State<TrackingFoodPage> {
     'dinner': 0,
   };
   Map<String, double> macronutrients = {'protein': 0, 'carbs': 0, 'fat': 0};
-  bool _isLoading = true;
+  
 
   @override
   void initState() {
     super.initState();
-    _fetchMealCalories();
-    _fetchMacroNutrients();
   }
 
-  Future<void> _fetchMealCalories() async {
-    try {
-      final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-      String date = DateTime.now().toString().split(' ')[0];
-
-      for (String mealType in mealCalories.keys) {
-        QuerySnapshot snapshot = await _firestore
-            .collection('meals')
-            .doc(date)
-            .collection(mealType)
-            .get();
-
-        int totalCalories = snapshot.docs.fold(0, (sum, doc) {
-          int calories = int.tryParse(doc['calories']?.toString() ?? '0') ?? 0;
-          return sum + calories;
-        });
-
-        setState(() {
-          mealCalories[mealType] = totalCalories;
-        });
-      }
-    } catch (e) {
-      debugPrint("Error fetching meal calories: $e");
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  String getCurrentDate() {
-    DateTime now = DateTime.now();
-    return "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-  }
-
-  Future<void> _fetchMacroNutrients() async {
-    String currentDate = getCurrentDate();
-    try {
-      final data = await _foodify2oData.getTotalMacronutrients(currentDate);
-      setState(() {
-        macronutrients = data;
-      });
-    } catch (e) {
-      debugPrint("Error fetching meal data: $e");
-    }
-  }
-  
-
+ 
   @override
   Widget build(BuildContext context) {
-    int totalCaloriesConsumed = mealCalories.values.fold(0, (sum, cal) => sum + cal);
 
-    return PopScope(
-        canPop: true,
-    onPopInvoked: (bool didPop) async {
-      if (didPop) return;
-      try {
-        final data = await _foodify2oData.getTotalMacronutrients(getCurrentDate());
-        if (mounted) {
-          setState(() {
-            macronutrients = data;
-          });
-        }
-      } catch (e) {
-        debugPrint("Error fetching meal data: $e");
-      }
-    },
-
-
-      child: Scaffold(
-        body: Stack(
-          children: [
-            const Background(), // Ensure this widget is defined or imported
-            SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // **App Bar Section**
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.arrow_back_ios, size: 28),
-                        ),
-                        const Text("Today", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                        const Icon(Icons.settings, size: 28),
-                      ],
+    return Scaffold(
+      body: Stack(
+        children: [
+          const Background(), 
+          Column(
+           
+            children: [
+              // **App Bar Section**
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios, size: 28),
                     ),
-                  ),
-      
-                  // **Calories Summary Section**
-                  Center(
-                    child: Column(
-                      children: [
-                        const Icon(Icons.restaurant, size: 60, color: Colors.orange),
-                        Text("$totalCaloriesConsumed of 1800", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        const Text("Cal Eaten", style: TextStyle(fontSize: 16, color: Colors.black87)),
-                      ],
-                    ),
-                  ),
-      
-                  const SizedBox(height: 20),
-      
-                  // **Horizontal Scroll Cards**
-                  SizedBox(
-                    height: 100,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        _buildInsightsCard(context),
-                        _buildReciepiesCard(context),
-                        _buildSnapGalleriesCard(),
-                        _buildSavedMealsCard(),
-                      ],
-                    ),
-                  ),
-      
-                  // **Meal Sections**
-                  Expanded(
-                    child: _isLoading
-                        ? ShimmerLoading() 
-                        : ListView(
-                            children: [
-                              _buildMealSection(context, "Breakfast", "${mealCalories['breakfast'] ?? 0} of 450 Cal", "All you need is some breakfast ☀️🍳"),
-                              _buildMealSection(context, "Lunch", "${mealCalories['lunch'] ?? 0} of 450 Cal", "Don't miss lunch 🍱 It's time to get a tasty meal"),
-                              _buildMealSection(context, "Snack", "${mealCalories['snacks'] ?? 0} of 450 Cal", "Have a great healthy snack 🥗"),
-                              _buildMealSection(context, "Dinner", "${mealCalories['dinner'] ?? 0} of 225 Cal", "Get energized by grabbing a morning snack 🥜"),
-                            ],
-                          ),
-                  ),
-                ],
+                    const Text("Today", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    const Icon(Icons.settings, size: 28),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+              
+              // **Calories Summary Section**
+              Center(
+                child: Column(
+                  children: [
+                    const Icon(Icons.restaurant, size: 60, color: Colors.orange),
+                    Text("0 of 1800", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    const Text("Cal Eaten", style: TextStyle(fontSize: 16, color: Colors.black87)),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 20),
+              
+              
+              SizedBox(
+                height: 100,
+                child: ListView(
+                  children: [
+                    _buildInsightsCard(context),
+                    _buildReciepiesCard(context),
+                    _buildSnapGalleriesCard(),
+                    _buildSavedMealsCard(),
+                  ],
+                ),
+              ),
+              
+              
+              Expanded(
+                child: 
+                   
+                    ListView(
+                        children: [
+                          _buildMealSection(context, "Breakfast", "${mealCalories['breakfast'] ?? 0} of 450 Cal", "All you need is some breakfast ☀️🍳"),
+                          _buildMealSection(context, "Lunch", "${mealCalories['lunch'] ?? 0} of 450 Cal", "Don't miss lunch 🍱 It's time to get a tasty meal"),
+                          _buildMealSection(context, "Snack", "${mealCalories['snacks'] ?? 0} of 450 Cal", "Have a great healthy snack 🥗"),
+                          _buildMealSection(context, "Dinner", "${mealCalories['dinner'] ?? 0} of 225 Cal", "Get energized by grabbing a morning snack 🥜"),
+                        ],
+                      ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   // **Meal Section Widget**
   Widget _buildMealSection(BuildContext context, String title, String calories, String subtitle) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Row(
-                children: [
-                  Text(calories, style: const TextStyle(fontSize: 16, color: Colors.black87)),
-                  const SizedBox(width: 5),
-                  IconButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => SnapTrackPage(
-                            appBarTitle: 'Track $title',
-                          ),
+    return Column(
+      
+      children: [
+        Row(
+          
+          children: [
+            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Row(
+              children: [
+                Text(calories, style: const TextStyle(fontSize: 16, color: Colors.black87)),
+               
+                IconButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => SnapTrackPage(
+                          appBarTitle: 'Track $title',
                         ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.add_a_photo,
-                      size: 20,
-                      color: Colors.orange,
-                    ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.add_a_photo,
+                    size: 20,
+                    color: Colors.orange,
                   ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            height: MediaQuery.of(context).size.height * .15,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(25.0),
-              color: Colors.orangeAccent,
+                ),
+              ],
             ),
-            child: Text(subtitle, style: const TextStyle(fontSize: 16, color: Colors.white)),
+          ],
+        ),
+        Container(
+          
+          height: MediaQuery.of(context).size.height * .15,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25.0),
+            color: Colors.orangeAccent,
           ),
-          const Divider(),
-        ],
-      ),
+          child: Text(subtitle, style: const TextStyle(fontSize: 16, color: Colors.white)),
+        ),
+        const Divider(),
+      ],
     );
   }
 
-  // **Insights Card Widget**
+  
   Widget _buildInsightsCard(BuildContext context) {
     return GestureDetector(
       onTap: () {
@@ -271,14 +194,14 @@ class _TrackingFoodPageState extends State<TrackingFoodPage> {
             borderRadius: BorderRadius.circular(25.0),
             color: Colors.white10
           ),
-          alignment: Alignment.center,
+          
           child: const Text('Insights', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
         ),
       ),
     );
   }
 
-  // **Snap Galleries Card Widget**
+
   Widget _buildSnapGalleriesCard() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -289,7 +212,7 @@ class _TrackingFoodPageState extends State<TrackingFoodPage> {
           borderRadius: BorderRadius.circular(25.0),
           color: Colors.white10
         ),
-        alignment: Alignment.center,
+        
         child: const Text('SnapGalleries', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
       ),
     );
@@ -312,7 +235,7 @@ class _TrackingFoodPageState extends State<TrackingFoodPage> {
             borderRadius: BorderRadius.circular(25.0),
             color: Colors.white10
           ),
-          alignment: Alignment.center,
+         
           child: const Text('Recipes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
         ),
       ),
@@ -330,7 +253,7 @@ class _TrackingFoodPageState extends State<TrackingFoodPage> {
           borderRadius: BorderRadius.circular(25.0),
           color: Colors.white10
         ),
-        alignment: Alignment.center,
+        
         child: const Text('SavedMeals', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
       ),
     );

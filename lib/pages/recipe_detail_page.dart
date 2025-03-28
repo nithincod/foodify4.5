@@ -1,120 +1,157 @@
 import 'package:flutter/material.dart';
+import 'package:foodify2o/services/food_api_service.dart';
 
-class RecipeDetailPage extends StatelessWidget {
-  final dynamic recipe;
+class RecipeDetailPage extends StatefulWidget {
+  final int recipeId;
 
-  const RecipeDetailPage({Key? key, required this.recipe}) : super(key: key);
+  const RecipeDetailPage({Key? key, required this.recipeId}) : super(key: key);
+
+  @override
+  State<RecipeDetailPage> createState() => _RecipeDetailPageState();
+}
+
+class _RecipeDetailPageState extends State<RecipeDetailPage> {
+  late Future<Map<String, dynamic>> _recipeFuture;
+  final FoodApiService _apiService = FoodApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    _recipeFuture = _apiService.getRecipeDetails(widget.recipeId);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 250,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Image.network(
-                recipe['image'],
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    recipe['label'],
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _recipeFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          final recipe = snapshot.data!;
+
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 250,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Image.network(
+                    recipe['image'] ?? '',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(Icons.fastfood),
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '${recipe['calories']?.toStringAsFixed(0) ?? 'N/A'} calories | ${recipe['ingredients'].length} ingredients',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildNutritionSection(),
-                  const SizedBox(height: 20),
-                  _buildIngredientsSection(),
-                ],
+                ),
               ),
-            ),
-          ),
-        ],
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        recipe['title'] ?? 'No Title',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildRecipeMeta(recipe),
+                      const SizedBox(height: 20),
+                      _buildSectionTitle('Summary'),
+                      const SizedBox(height: 10),
+                      _buildRecipeSummary(recipe),
+                      const SizedBox(height: 20),
+                      _buildSectionTitle('Ingredients'),
+                      const SizedBox(height: 10),
+                      _buildIngredientsList(recipe),
+                      const SizedBox(height: 20),
+                      _buildSectionTitle('Nutrition'),
+                      const SizedBox(height: 10),
+                      _buildNutritionInfo(recipe),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildNutritionSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildRecipeMeta(Map<String, dynamic> recipe) {
+    return Row(
       children: [
-        const Text(
-          'Nutrition Facts',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columns: const [
-              DataColumn(label: Text('Nutrient')),
-              DataColumn(label: Text('Amount')),
-              DataColumn(label: Text('Daily %')),
-            ],
-            rows: [
-              _buildNutritionRow('Calories', recipe['calories'], 'kcal'),
-              _buildNutritionRow('Protein', recipe['totalNutrients']['PROCNT']['quantity'], 'g'),
-              _buildNutritionRow('Carbs', recipe['totalNutrients']['CHOCDF']['quantity'], 'g'),
-              _buildNutritionRow('Fat', recipe['totalNutrients']['FAT']['quantity'], 'g'),
-              _buildNutritionRow('Fiber', recipe['totalNutrients']['FIBTG']['quantity'], 'g'),
-            ],
-          ),
-        ),
+        if (recipe['readyInMinutes'] != null)
+          _buildMetaChip(Icons.timer, '${recipe['readyInMinutes']} mins'),
+        if (recipe['servings'] != null)
+          _buildMetaChip(Icons.people, '${recipe['servings']} servings'),
+        if (recipe['vegetarian'] == true)
+          _buildMetaChip(Icons.eco, 'Vegetarian'),
       ],
     );
   }
 
-  DataRow _buildNutritionRow(String label, dynamic value, String unit) {
-    return DataRow(
-      cells: [
-        DataCell(Text(label)),
-        DataCell(Text('${value?.toStringAsFixed(1) ?? 'N/A'} $unit')),
-        DataCell(Text('${(value != null ? (value * 100 / 2000).toStringAsFixed(0) : 'N/A')}%')),
-      ],
+  Widget _buildMetaChip(IconData icon, String label) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: Chip(
+        avatar: Icon(icon, size: 18),
+        label: Text(label),
+      ),
     );
   }
 
-  Widget _buildIngredientsSection() {
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    );
+  }
+
+  Widget _buildRecipeSummary(Map<String, dynamic> recipe) {
+    return Text(
+      recipe['summary']?.replaceAll(RegExp(r'<[^>]*>'), '') ?? 'No summary available',
+    );
+  }
+
+  Widget _buildIngredientsList(Map<String, dynamic> recipe) {
+    final ingredients = recipe['extendedIngredients'] as List? ?? [];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Ingredients',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      children: ingredients.map((ingredient) => 
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Text('• ${ingredient['original']}'),
         ),
-        const SizedBox(height: 10),
-        ...recipe['ingredientLines'].map<Widget>((ingredient) => 
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('• '),
-                Expanded(child: Text(ingredient)),
-              ],
-            ),
+      ).toList(),
+    );
+  }
+
+  Widget _buildNutritionInfo(Map<String, dynamic> recipe) {
+    final nutrition = recipe['nutrition'];
+    if (nutrition == null) return const Text('Nutrition data not available');
+
+    final nutrients = nutrition['nutrients'] as List? ?? [];
+    return Column(
+      children: nutrients.take(5).map((nutrient) => 
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Row(
+            children: [
+              Expanded(child: Text(nutrient['name'])),
+              Text('${nutrient['amount']?.toStringAsFixed(1)} ${nutrient['unit']}'),
+            ],
           ),
-        ).toList(),
-      ],
+        ),
+      ).toList(),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/food_api_service.dart';
-import '../utils/background.dart';
+import 'package:foodify2o/services/food_api_service.dart';
+import 'package:foodify2o/utils/background.dart';
+import 'package:foodify2o/pages/recipe_detail_page.dart';
 
 class RecipiesPage extends StatefulWidget {
   const RecipiesPage({super.key});
@@ -10,20 +11,20 @@ class RecipiesPage extends StatefulWidget {
 }
 
 class _RecipiesPageState extends State<RecipiesPage> {
-  final TextEditingController textController = TextEditingController();
-  final FoodApiService apiService = FoodApiService();
-  bool isLoading = false;
+  final FoodApiService _apiService = FoodApiService();
+  final TextEditingController _searchController = TextEditingController();
+  bool _isLoading = false;
 
-  final List<String> topCategories = [
-    "Sabzis, Dals and Curries",
-    "Rotis And Parathas",
-    "Idlis and Dosas",
-    "Sweets and Desserts"
+  final List<String> _categories = [
+    "Vegetarian",
+    "Vegan",
+    "Gluten Free",
+    "Desserts"
   ];
 
   @override
   void dispose() {
-    textController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -32,6 +33,7 @@ class _RecipiesPageState extends State<RecipiesPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Healthy Recipes', style: TextStyle(color: Colors.white)),
+      ),
       body: Stack(
         children: [
           const Background(),
@@ -39,76 +41,52 @@ class _RecipiesPageState extends State<RecipiesPage> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                _buildSearchField(),
+                _buildSearchBar(),
                 const SizedBox(height: 20),
-                _buildTopCategories(),
-                Expanded(
-                  child: ListView(
-                    children: [
-                      _buildCategorySection('Rice Based Dishes'),
-                      _buildCategorySection('Salads'),
-                      _buildCategorySection('Fruit Juices'),
-                      _buildCategorySection('Vegetarian Dishes'),
-                    ],
-                  ),
-                ),
+                _buildCategoryList(),
+                const SizedBox(height: 20),
+                Expanded(child: _buildRecipeGrid()),
               ],
             ),
           ),
+          if (_isLoading) _buildLoadingOverlay(),
         ],
       ),
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchBar() {
     return TextField(
-      controller: textController,
+      controller: _searchController,
       decoration: InputDecoration(
+        hintText: 'Search healthy recipes...',
         filled: true,
         fillColor: Colors.white.withOpacity(0.9),
-        hintText: "Search recipes...",
-        prefixIcon: const Icon(Icons.search, color: Colors.blue),
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.search),
+          onPressed: _handleSearch,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide.none,
         ),
-        suffixIcon: IconButton(
-          icon: const Icon(Icons.send),
-          onPressed: _searchRecipes,
-        ),
       ),
+      onSubmitted: (_) => _handleSearch(),
     );
   }
 
-  Widget _buildTopCategories() {
+  Widget _buildCategoryList() {
     return SizedBox(
-      height: 120,
+      height: 50,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: topCategories.length,
+        itemCount: _categories.length,
         itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () => _showCategoryRecipes(topCategories[index]),
-            child: Container(
-              width: 150,
-              margin: const EdgeInsets.only(right: 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    topCategories[index],
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
+          return Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: FilterChip(
+              label: Text(_categories[index]),
+              onSelected: (_) => _fetchCategoryRecipes(_categories[index]),
             ),
           );
         },
@@ -116,133 +94,121 @@ class _RecipiesPageState extends State<RecipiesPage> {
     );
   }
 
-  Widget _buildCategorySection(String title) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 180,
-          child: FutureBuilder<List<dynamic>>(
-            future: apiService.searchRecipes(title),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return _buildShimmerLoading();
-              }
-              if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              }
-              return _buildRecipeList(snapshot.data ?? []);
-            },
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _buildRecipeGrid() {
+    return FutureBuilder<List<dynamic>>(
+      future: _apiService.searchRecipes("healthy"),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-  Widget _buildShimmerLoading() {
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
-      itemCount: 3,
-      itemBuilder: (context, index) {
-        return Container(
-          width: 150,
-          margin: const EdgeInsets.only(right: 10),
-          decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(15),
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        final recipes = snapshot.data ?? [];
+
+        return GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 0.8,
           ),
+          itemCount: recipes.length,
+          itemBuilder: (context, index) {
+            final recipe = recipes[index];
+            return _buildRecipeCard(recipe);
+          },
         );
       },
     );
   }
 
-  Widget _buildRecipeList(List<dynamic> recipes) {
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
-      itemCount: recipes.length,
-      itemBuilder: (context, index) {
-        final recipe = recipes[index]['recipe'];
-        return GestureDetector(
-          onTap: () => _showRecipeDetails(recipe),
-          child: Container(
-            width: 150,
-            margin: const EdgeInsets.only(right: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(15),
-              image: DecorationImage(
-                image: NetworkImage(recipe['image']),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Colors.black.withOpacity(0.3),
-                  BlendMode.darken,
+  Widget _buildRecipeCard(Map<String, dynamic> recipe) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: InkWell(
+        onTap: () => _showRecipeDetails(recipe['id']),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                child: Image.network(
+                  recipe['image'] ?? '',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (_, __, ___) => const Icon(Icons.fastfood),
                 ),
               ),
             ),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  recipe['label'],
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    recipe['title'] ?? 'No Title',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                ),
+                  if (recipe['readyInMinutes'] != null)
+                    Text('Ready in ${recipe['readyInMinutes']} mins'),
+                ],
               ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 
-  void _searchRecipes() async {
-    if (textController.text.isEmpty) return;
-    setState(() => isLoading = true);
+  Widget _buildLoadingOverlay() {
+    return Container(
+      color: Colors.black.withOpacity(0.3),
+      child: const Center(child: CircularProgressIndicator()),
+    );
+  }
+
+  Future<void> _handleSearch() async {
+    if (_searchController.text.isEmpty) return;
+    _setLoading(true);
     try {
-      final results = await apiService.searchRecipes(textController.text);
+      final results = await _apiService.searchRecipes(_searchController.text);
       _showRecipeResults(results);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('Search failed: $e')),
       );
     } finally {
-      setState(() => isLoading = false);
+      _setLoading(false);
     }
   }
 
-  void _showCategoryRecipes(String category) async {
-    setState(() => isLoading = true);
+  Future<void> _fetchCategoryRecipes(String category) async {
+    _setLoading(true);
     try {
-      final results = await apiService.searchRecipes(category);
+      final results = await _apiService.searchRecipes(category);
       _showRecipeResults(results, category: category);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('Failed to load $category recipes: $e')),
       );
     } finally {
-      setState(() => isLoading = false);
+      _setLoading(false);
     }
   }
 
-  void _showRecipeDetails(dynamic recipe) {
+  void _showRecipeDetails(int recipeId) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => RecipeDetailPage(recipe: recipe),
+        builder: (context) => RecipeDetailPage(recipeId: recipeId),
       ),
     );
   }
@@ -251,42 +217,26 @@ class _RecipiesPageState extends State<RecipiesPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.8,
-        decoration: BoxDecoration(
-          color: Colors.blue[800],
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Text(
               category ?? 'Search Results',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
                 itemCount: recipes.length,
                 itemBuilder: (context, index) {
-                  final recipe = recipes[index]['recipe'];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    child: ListTile(
-                      leading: Image.network(
-                        recipe['image'],
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      ),
-                      title: Text(recipe['label']),
-                      subtitle: Text('${recipe['calories']?.toStringAsFixed(0) ?? 'N/A'} kcal'),
-                      onTap: () => _showRecipeDetails(recipe),
-                    ),
+                  final recipe = recipes[index];
+                  return ListTile(
+                    leading: Image.network(recipe['image'] ?? '', width: 50),
+                    title: Text(recipe['title'] ?? 'No Title'),
+                    subtitle: Text('${recipe['readyInMinutes'] ?? '?'} mins'),
+                    onTap: () => _showRecipeDetails(recipe['id']),
                   );
                 },
               ),
@@ -295,5 +245,9 @@ class _RecipiesPageState extends State<RecipiesPage> {
         ),
       ),
     );
+  }
+
+  void _setLoading(bool loading) {
+    setState(() => _isLoading = loading);
   }
 }

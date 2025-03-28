@@ -2,31 +2,30 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class FoodApiService {
-  static const String baseUrl = 'https://api.edamam.com/api/recipes/v2';
-  static const String appId = 'YOUR_APP_ID'; // Replace with your actual ID
-  static const String appKey = 'YOUR_APP_KEY'; // Replace with your actual key
+  static const String baseUrl = 'https://api.spoonacular.com';
+  static const String apiKey = '42153536c0344335a8fc57965d15927f'; 
 
   Future<List<dynamic>> searchRecipes(String query) async {
-    final response = await http.get(Uri.parse(
-      '$baseUrl?type=public&q=${Uri.encodeQueryComponent(query)}&app_id=$appId&app_key=$appKey',
-    ));
+    final response = await http.get(
+      Uri.parse('$baseUrl/recipes/complexSearch?query=$query&apiKey=$apiKey&number=10&addRecipeInformation=true')
+    );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body)['hits'];
+      return jsonDecode(response.body)['results'];
     } else {
-      throw Exception('Failed to load recipes: ${response.statusCode}');
+      throw Exception('API Error: ${response.statusCode} - ${response.body}');
     }
   }
 
-  Future<Map<String, dynamic>> getRecipeDetails(String id) async {
-    final response = await http.get(Uri.parse(
-      '$baseUrl/$id?type=public&app_id=$appId&app_key=$appKey',
-    ));
+  Future<Map<String, dynamic>> getRecipeDetails(int id) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/recipes/$id/information?apiKey=$apiKey&includeNutrition=true')
+    );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body)['recipe'];
+      return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to load recipe details: ${response.statusCode}');
+      throw Exception('Failed to load recipe details');
     }
   }
 }

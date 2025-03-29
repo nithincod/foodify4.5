@@ -19,63 +19,65 @@ class _FoodifyOnboardingPageState extends State<FoodifyOnboardingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(onboardingList[_currentIndex].bgImage),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: CustomGradientCard(
-          gradient: AppColors.customOnboardingGradient,
-          child: Column(
-            children: [
-              const Spacer(),
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: onboardingList.length,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
-                  itemBuilder: (context, index) {
-                    return OnboardingCard(
-                      onboarding: onboardingList[index],
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
-              CustomDotsIndicator(
-                dotsCount: onboardingList.length,
-                position: _currentIndex,
-              ),
-              const SizedBox(height: 30),
-              PrimaryButton(
-                onTap: () {
-                  if (_currentIndex == onboardingList.length - 1) {
-                    Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AuthGate(),
-                            ),
-                          );
-                  } else {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.fastOutSlowIn,
-                    );
-                  }
-                },
-                text: 'Continue',
-              ),
-              const SizedBox(height: 30),
-            ],
-          ),
-        ),
+     body: Stack(
+  fit: StackFit.expand, // Ensures full coverage
+  children: [
+    Positioned.fill( // Ensures image stretches to fit the screen
+      child: Image.asset(
+        onboardingList[_currentIndex].bgImage,
+        fit: BoxFit.cover, // Ensures it covers the entire screen
       ),
+    ),
+    CustomGradientCard(
+      gradient: AppColors.customOnboardingGradient,
+      child: Column(
+        children: [
+          const Spacer(),
+          Expanded(
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: onboardingList.length,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                return OnboardingCard(
+                  onboarding: onboardingList[index],
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 20),
+          CustomDotsIndicator(
+            dotsCount: onboardingList.length,
+            position: _currentIndex,
+          ),
+          const SizedBox(height: 30),
+          PrimaryButton(
+            onTap: () {
+              if (_currentIndex == onboardingList.length - 1) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AuthGate()),
+                );
+              } else {
+                _pageController.nextPage(
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.fastOutSlowIn,
+                );
+              }
+            },
+            text: 'Continue',
+          ),
+          const SizedBox(height: 30),
+        ],
+      ),
+    ),
+  ],
+),
+
     );
   }
 }
@@ -97,8 +99,8 @@ class PrimaryButton extends StatefulWidget {
     this.borderRadius,
     this.fontSize,
     this.color,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<PrimaryButton> createState() => _PrimaryButtonState();
@@ -268,15 +270,13 @@ class Onboarding {
 
 List<Onboarding> onboardingList = [
   Onboarding(
-    bgImage: AppAssets.kOnboardingFirst,
-    title: 'Goods with guaranteed quality',
-    info:
-        'Semper in cursus magna et eu varius nunc adipiscing. Elementum justo, laoreet id sem . ',
+    bgImage: "assets/images/pizza.png",
+    title: "Delicious Meals, Just a Tap Away!",
+    info: "Discover a variety of mouth-watering dishes, delivered fresh to your doorstep.",
   ),
   Onboarding(
-    bgImage: AppAssets.kOnboardingSecond,
-    title: "Total warranty if the product doesn't fit",
-    info:
-        'Semper in cursus magna et eu varius nunc adipiscing. Elementum justo, laoreet id sem . ',
+    bgImage: "assets/images/burger.png",
+    title: "Satisfaction Guaranteed!",
+    info: "Enjoy top-quality food with a total refund or replacement if you're not happy.",
   ),
 ];

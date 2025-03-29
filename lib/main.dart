@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:foodify2o/firebase_options.dart';
-import 'package:foodify2o/pages/foofify2oOnboardinpage.dart';
+import 'package:foodify2o/pages/foodify_on_boarding_page.dart';
 import 'package:provider/provider.dart';
 
 import 'services/AuthServices.dart';

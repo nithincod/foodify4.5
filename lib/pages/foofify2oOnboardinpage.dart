@@ -241,7 +241,7 @@ class CustomDotsIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return DotsIndicator(
       dotsCount: dotsCount,
-      position: position,
+      position: position.toDouble(),
       decorator: DotsDecorator(
         color: AppColors.kWhite,
         size: const Size.square(8.0),

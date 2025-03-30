@@ -9,7 +9,7 @@ class GradientContainer extends StatelessWidget {
   const GradientContainer({
     Key? key,
     required this.child,
-    this.gradientColors = const [Color(0xFF4A90E2), Color(0xFF145AE0)], // Default gradient colors
+    this.gradientColors = const [Color(0xFF001F54), Color(0xFF003F88)], // Adjusted gradient colors
     this.borderRadius = 12.0,
     this.elevation = 6.0,
   }) : super(key: key);
@@ -28,7 +28,7 @@ class GradientContainer extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: elevation,
-            offset: Offset(0, 4), // Subtle shadow below
+            offset: Offset(0, 4),
           ),
         ],
       ),

@@ -11,7 +11,7 @@ class GradientButton extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFFC466B), Color(0xFF3F5EFB)],
+          colors: [Color(0xFF00296B), Color(0xFF003F88)], // Adjusted colors
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -26,7 +26,7 @@ class GradientButton extends StatelessWidget {
       ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent, // Transparent to allow gradient
+          backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
           padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),

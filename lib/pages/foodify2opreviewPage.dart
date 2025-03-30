@@ -1,35 +1,60 @@
 import 'package:camera/camera.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:foodify2o/pages/foodify2oFoodSearchScreen.dart';
+import 'package:foodify2o/utils/searchinput.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'foodify2opreviewPage.dart';
 
-class PreviewPage extends StatefulWidget {
-  final CameraDescription camera; // Receive camera description
+class SnapTrackPage extends StatefulWidget {
+  final String appBarTitle;
 
-  PreviewPage({required this.camera});
+  SnapTrackPage({required this.appBarTitle});
 
   @override
-  _PreviewPageState createState() => _PreviewPageState();
+  _SnapTrackPageState createState() => _SnapTrackPageState();
 }
 
-class _PreviewPageState extends State<PreviewPage> {
+class _SnapTrackPageState extends State<SnapTrackPage> {
   CameraController? _cameraController;
+  List<CameraDescription>? _cameras;
   bool _isCameraInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
+    _requestCameraPermission();
+  }
+
+  Future<void> _requestCameraPermission() async {
+    var status = await Permission.camera.request();
+    if (status.isGranted) {
+      _initializeCamera();
+    } else {
+      print('Camera permission denied');
+    }
   }
 
   Future<void> _initializeCamera() async {
-    _cameraController = CameraController(
-      widget.camera,
-      ResolutionPreset.max, // High quality
-      enableAudio: false,
-    );
+    try {
+      _cameras = await availableCameras();
+      if (_cameras != null && _cameras!.isNotEmpty) {
+        _cameraController = CameraController(
+          _cameras![0],
+          ResolutionPreset.high,
+          enableAudio: false,
+        );
 
-    await _cameraController!.initialize();
-    if (!mounted) return;
-    setState(() => _isCameraInitialized = true);
+        await _cameraController!.initialize();
+        if (!mounted) return;
+
+        setState(() => _isCameraInitialized = true);
+      } else {
+        print('No cameras available');
+      }
+    } catch (e) {
+      print('Error initializing camera: $e');
+    }
   }
 
   @override
@@ -38,67 +63,95 @@ class _PreviewPageState extends State<PreviewPage> {
     super.dispose();
   }
 
+  Future<void> _captureImage() async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      print('Camera is not initialized');
+      return;
+    }
+    try {
+      XFile image = await _cameraController!.takePicture();
+      if (!mounted) return;
+
+      // Navigate to PreviewPage with the captured image
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PreviewPage(imagePath: image.path),
+        ),
+      );
+    } catch (e) {
+      print('Error capturing image: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          _isCameraInitialized
-              ? Positioned.fill(child: CameraPreview(_cameraController!))
-              : Center(child: CircularProgressIndicator()),
-
-          // Camera Framing Guide (Rounded Corners)
-         
-
-          // SnapFood Text
-          Positioned(
-            top: 40,
-            left: 5,
-            child: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white, size: 30),
-              onPressed: () => Navigator.pop(context),
-            ),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          widget.appBarTitle,
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
-         
-          Positioned(
-            top: 85,
-            left: MediaQuery.of(context).size.width / 2 - 60,
-            child: Row(
+        ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                Icon(Icons.camera, color: Colors.white, size: 28),
-                SizedBox(width: 10),
-                Text(
-                  "SnapFood",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                _isCameraInitialized && _cameraController != null
+                    ? CameraPreview(_cameraController!)
+                    : Center(child: CircularProgressIndicator()),
+                Positioned(
+                  bottom: 40,
+                  child: GestureDetector(
+                    onTap: _isCameraInitialized ? _captureImage : null,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.camera_alt, color: Colors.black, size: 30),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          'Snap or Add from gallery',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-
-          // Capture Button (Bottom Center)
-          //gallery button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => FoodSearchScreen()),
+                );
+              },
+              child: IgnorePointer(
+                child: SearchInput(
+                  textController: TextEditingController(),
+                  hintText: 'Search for food',
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
-
-  Future<void> _captureImage() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      print('Camera not initialized');
-      return;
-    }
-    try {
-      final XFile image = await _cameraController!.takePicture();
-      print('Image captured: ${image.path}');
-    } catch (e) {
-      print('Error capturing image: $e');
-    }
-  }
 }
-
-

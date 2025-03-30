@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:foodify2o/pages/foodify2oFoodSearchScreen.dart';
 import 'package:foodify2o/utils/searchinput.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import 'foodify2opreviewPage.dart';
 
 class SnapTrackPage extends StatefulWidget {
@@ -42,11 +41,13 @@ class _SnapTrackPageState extends State<SnapTrackPage> {
       if (_cameras != null && _cameras!.isNotEmpty) {
         _cameraController = CameraController(
           _cameras![0],
-          ResolutionPreset.medium,
+          ResolutionPreset.high,
           enableAudio: false,
         );
+
         await _cameraController!.initialize();
         if (!mounted) return;
+
         setState(() => _isCameraInitialized = true);
       } else {
         print('No cameras available');
@@ -68,13 +69,14 @@ class _SnapTrackPageState extends State<SnapTrackPage> {
       return;
     }
     try {
+      XFile image = await _cameraController!.takePicture();
       if (!mounted) return;
 
-      // Navigate to next screen with the captured image path
+      // Navigate to PreviewPage with the captured image
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PreviewPage(camera: _cameras![0]),
+          builder: (context) => PreviewPage(imagePath: image.path),
         ),
       );
     } catch (e) {
@@ -90,78 +92,65 @@ class _SnapTrackPageState extends State<SnapTrackPage> {
         title: Text(
           widget.appBarTitle,
           style: TextStyle(
-            color: Color.fromARGB(255, 80, 80, 80),
+            color: Colors.black,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  _isCameraInitialized && _cameraController != null
-                      ? Container(
-                          height: MediaQuery.of(context).size.height * 0.35,
-                          width: double.infinity,
+      body: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                _isCameraInitialized && _cameraController != null
+                    ? CameraPreview(_cameraController!)
+                    : Center(child: CircularProgressIndicator()),
+                Positioned(
+                  bottom: 40,
+                  child: GestureDetector(
+                    onTap: _isCameraInitialized ? _captureImage : null,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
                           decoration: BoxDecoration(
-                            border: Border.all(
-                                color: Color.fromARGB(255, 255, 255, 255),
-                                width: 2),
-                            borderRadius: BorderRadius.circular(30),
+                            color: Colors.white,
+                            shape: BoxShape.circle,
                           ),
-                          child: CameraPreview(_cameraController!),
-                        )
-                      : Center(child: CircularProgressIndicator()),
-                  Positioned(
-                    bottom: 20,
-                    child: GestureDetector(
-                      onTap: _isCameraInitialized ? _captureImage : null,
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Color.fromARGB(137, 139, 138, 138),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.camera_alt,
-                                color: Colors.white, size: 20),
-                          ),
-                          SizedBox(height: 6),
-                          Text('Snap or Add from gallery',
-                              style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
+                          child: Icon(Icons.camera_alt, color: Colors.black, size: 30),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          'Snap or Add from gallery',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-              SizedBox(height: 20),
-              InkWell(
-  onTap: () {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => FoodSearchScreen()),
-    );
-    print('tapped');
-  },
-  child: IgnorePointer( // Prevents internal TextField interactions
-    child: SearchInput(
-      textController: TextEditingController(),
-      hintText: 'Search for food',
-    ),
-  ),
-),
-
-            ],
+                ),
+              ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => FoodSearchScreen()),
+                );
+              },
+              child: IgnorePointer(
+                child: SearchInput(
+                  textController: TextEditingController(),
+                  hintText: 'Search for food',
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

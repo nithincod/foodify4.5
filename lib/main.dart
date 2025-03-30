@@ -3,18 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:foodify2o/firebase_options.dart';
 import 'package:foodify2o/pages/foofify2oOnboardinpage.dart';
 import 'package:provider/provider.dart';
-
 import 'services/AuthServices.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-
-  if (Firebase.apps.isEmpty) {
+  try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
-      
     );
+    print('Firebase Initialized Successfully');
+  } catch (e) {
+    print('Firebase Initialization Error: $e');
   }
 
   runApp(const MyApp());
@@ -25,11 +25,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AuthService(),
-      child: const MaterialApp(
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AuthService()),
+      ],
+      child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: FoodifyOnboardingPage(),
+        title: 'Foodify',
+        theme: ThemeData(
+          primarySwatch: Colors.green,
+          fontFamily: 'Roboto',
+          scaffoldBackgroundColor: Colors.white,
+        ),
+        home: const FoodifyOnboardingPage(),
       ),
     );
   }

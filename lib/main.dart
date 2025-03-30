@@ -37,7 +37,30 @@ class MyApp extends StatelessWidget {
           fontFamily: 'Roboto',
           scaffoldBackgroundColor: Colors.white,
         ),
-        home: const FoodifyOnboardingPage(),
+        home: const GradientBackground(child: FoodifyOnboardingPage()),
+      ),
+    );
+  }
+}
+
+class GradientBackground extends StatelessWidget {
+  final Widget child;
+
+  const GradientBackground({Key? key, required this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF4A90E2), Color(0xFF145AE0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: child,
       ),
     );
   }
